@@ -30,13 +30,9 @@ public class MainTest {
 //		dealFolder("D:\\wencai/test");
 
 
-		//		System.out.println(df.format(0.196850394));
 
-		//	图片识字获取sql
-		//	String data=ReadFile.readFile02("C:\\Users\\tanxun\\Desktop/test.txt");
-		//	printSql(data, "20210528");
 		//	获取交易日历
-			printWenCaiByDate("C:\\Users\\tanxun\\Desktop/SH_JYRL_2020.txt");
+//			printWenCaiByDate("C:\\Users\\tanxun\\Desktop/SH_JYRL_2019.txt");
 		//找出缺少数据的天数
 //		findLackOfExcel("C:\\Users\\tanxun\\Desktop/SH_JYRL_2020.txt","D:\\wencai/test");
 
@@ -79,7 +75,7 @@ public class MainTest {
 	public static String getSqlFromData(List<List<List<Object>>> list,String date){
 		List<List<Object>> list1=list.get(0);
 		boolean hasData=false;
-		StringBuffer sb=new StringBuffer("insert  into jingjia1(date,code,name,nnextkpzf,nextkpzf,kpzf,nnextzf,nextzf,zf,kpcje,kphsl,ltsz,hslpm) VALUES\r\n ");
+		StringBuffer sb=new StringBuffer("insert  into jingjia1(date,code,name,nnextkpzf,nextkpzf,kpzf,nnextzf,nextzf,zf,kpcje,kphsl,ltsz,hslpm,ssts) VALUES\r\n ");
 		for(int i=2;i<list1.size()-1;i++){
 			//			000155.SZ	川能动力	9.968186638	1.516919487	3.13253012	1.06044539	10.03500583	3.25301205	22277400	0.20492126	18834100000
 			try {
@@ -94,6 +90,7 @@ public class MainTest {
 				double cje=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(8))/10000));
 				double hsl=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(9))));
 				double ltsz=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(10))/10000/10000));
+				String ssts=(String) list1.get(i).get(11);
 
 				sb.append("("+date +",");
 				sb.append("'"+code+"',");
@@ -107,11 +104,12 @@ public class MainTest {
 				sb.append(cje+",");
 				sb.append(hsl+",");
 				sb.append(ltsz+",");
-				sb.append(i-1);
+				sb.append(i-1 +",");
+				sb.append(ssts);
 				hasData=true;
 			} catch (Exception e) {
-//				System.out.println("test:"+list1.get(i).get(2));
-//				e.printStackTrace();
+//				System.out.println("test:"+list1.get(i).get(11));
+				e.printStackTrace();
 				
 				continue;
 			}
@@ -126,46 +124,6 @@ public class MainTest {
 		return sb.toString();
 	}
 
-	public static void printSql(String data,String date){
-		data=data.replace(",", "");
-		data=data.replace(" ", "");
-		String arr[]=data.split("\r\n");
-		StringBuffer sb=new StringBuffer();
-		sb.append("insert  into hsltest(date,code,name,nextkpzf,kpzf,nextzf,zf,kphsl,kpcje,ltsz) VALUES" );
-		for(int i=0;i<arr.length;i++){
-			if(i%9==0){
-				sb.append("(");
-				sb.append(date+",");
-			}
-			if(i%9==2||i%9==3||i%9==4||i%9==5||i%9==6){
-				sb.append(arr[i]).append(",");
-			}
-			else if(i%9==7){
-				if(arr[i].endsWith("万")){
-					sb.append(Double.valueOf(arr[i].replace("万", ""))).append(",");	
-				}
-				if(arr[i].endsWith("亿")){
-					sb.append(Double.valueOf(arr[i].replace("亿", ""))*10000).append(",");	
-				}
-			}
-			else if(i%9==8){
-				if(arr[i].endsWith("亿")){
-					sb.append(Double.valueOf(arr[i].replace("亿", ""))).append(",");	
-				}
-			}
-			else{
-				sb.append("'"+arr[i]+"'").append(",");
-			}
-
-
-			if(i%9==8){
-				sb.setLength(sb.length()-1);
-				sb.append(")\r\n,");
-			}
-		}
-		sb.setLength(sb.length()-1);
-		System.out.println(sb.toString()+";");
-	}
 
 	public static void findLackOfExcel(String tradeDateFilePath,String excelFoldPath) throws IOException{
 		//写入交易日
@@ -211,6 +169,7 @@ public class MainTest {
 
 	public static void printWenCaiByDate(String path) throws IOException{
 		String selectSql="date1涨幅;date1开盘涨幅;date1非一字板;date1开盘成交额大于1千万前20;剔除st股;date1总市值<500亿;date1上市天数;date1开盘换手率前20;非创业板;非科创板;非st;date2开盘涨幅;date2涨幅;date3开盘涨幅;date3涨幅";
+//		String selectSql="date1涨幅；date1开盘涨幅>2且非涨停；date1开盘成交额大于1千万前20；date2开盘涨幅；date2涨幅；剔除st股；date1总市值<500亿;date1开盘换手率前10；非创业板；非科创板；非st；";
 		String dates=ReadFile.readFile01(path);
 		String arrs[]=dates.split("\r\n");
 
