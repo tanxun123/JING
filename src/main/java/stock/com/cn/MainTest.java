@@ -170,7 +170,7 @@ public class MainTest {
 	public static void printWenCaiByDate(String path) throws IOException{
 //		String selectSql="date1涨幅;date1开盘涨幅;date1非一字板;date1开盘成交额大于1千万前20;剔除st股;date1总市值<500亿;date1上市天数;date1开盘换手率前20;非创业板;非科创板;非st;date2开盘涨幅;date2涨幅;";
 //		String selectSql="date1涨幅；date1开盘涨幅>2且非涨停；date1开盘成交额大于1千万前20；date2开盘涨幅；date2涨幅；剔除st股；date1总市值<500亿;date1开盘换手率前10；非创业板；非科创板；非st；";
-		String selectSql="date1涨停非连板;剔除st;date1涨停原因;date2涨幅;date3涨幅;date3最高涨幅;(date3均价/date2收盘价)*100;date2开盘涨幅; date2首次涨停时间不等于最终涨停时间;date2开盘非涨停";
+		String selectSql="date1涨停非连板;剔除st;date1涨停原因;date1涨幅;date2涨幅;date3涨幅;date3最高涨幅;(date3均价/date2收盘价)*100;date2开盘涨幅; date2首次涨停时间不等于最终涨停时间;date2开盘非涨停";
 		String dates=ReadFile.readFile01(path);
 		String arrs[]=dates.split("\r\n");
 
