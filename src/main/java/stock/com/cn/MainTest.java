@@ -27,20 +27,24 @@ public class MainTest {
 		//			List<List<List<Object>>> dataList=getDataFromExcel("D:\\wencai/20210104 涨幅;20210104开盘涨幅_....xlsx");
 		//			System.out.println(getSqlFromData(dataList,"20210104"));
 
-//		dealFolder("D:\\wencai/test");
+//		dealFolder("D:\\wencai/test","jingjia");
 
+//		dealFolder("D:\\wencai/test","lanban");
 
+		dealFolder("D:\\wencai/test","shouban");
 
 		//	获取交易日历
-			printWenCaiByDate("file/SH_JYRL_2021.txt");
+//			printWenCaiByDate("file/SH_JYRL_2021.txt");
 		//找出缺少数据的天数
 //		findLackOfExcel("file/SH_JYRL_2020.txt","D:\\wencai/test");
 
+		
+		
 	}
 
 
 
-	private static void dealFolder(String filepath)
+	private static void dealFolder(String filepath,String type)
 	{
 		File fileF = new File(filepath);
 		File[] files = fileF.listFiles();
@@ -57,11 +61,32 @@ public class MainTest {
 					continue;
 				}
 				else  {
-					System.out.println("-- file.getAbsolutePath():"+file.getAbsolutePath());
-					List<List<List<Object>>> dataList=getDataFromExcel(file.getAbsolutePath());
-					String date=file.getName().substring(0,8);
-					System.out.println(getSqlFromData(dataList,date));
-					ReadFile.WriteToFile(getSqlFromData(dataList,date), "D:/wencai/result.txt");
+					switch (type) {
+					case "jingjia":
+						System.out.println("-- file.getAbsolutePath():"+file.getAbsolutePath());
+						List<List<List<Object>>> dataList=getDataFromExcel(file.getAbsolutePath());
+						String date=file.getName().substring(0,8);
+						System.out.println(getSqlFromData(dataList,date));
+						ReadFile.WriteToFile(getSqlFromData(dataList,date), "D:/wencai/result.txt");
+						break;
+					case "lanban":
+						System.out.println("-- file.getAbsolutePath():"+file.getAbsolutePath());
+						dataList=getDataFromExcel(file.getAbsolutePath());
+						date=file.getName().substring(0,8);
+						System.out.println(getLanBanSqlFromData(dataList,date));
+						ReadFile.WriteToFile(getLanBanSqlFromData(dataList,date), "D:/wencai/result.txt");
+						break;
+					case "shouban":
+						System.out.println("-- file.getAbsolutePath():"+file.getAbsolutePath());
+						dataList=getDataFromExcel(file.getAbsolutePath());
+						date=file.getName().substring(0,8);
+						System.out.println(getShouBanSqlFromData(dataList,date));
+						ReadFile.WriteToFile(getShouBanSqlFromData(dataList,date), "D:/wencai/result.txt");
+						break;
+					default:
+						break;
+					}
+					
 				}
 			}
 		}
@@ -75,7 +100,7 @@ public class MainTest {
 	public static String getSqlFromData(List<List<List<Object>>> list,String date){
 		List<List<Object>> list1=list.get(0);
 		boolean hasData=false;
-		StringBuffer sb=new StringBuffer("insert  into jingjia1(date,code,name,nnextkpzf,nextkpzf,kpzf,nnextzf,nextzf,zf,kpcje,kphsl,ltsz,hslpm,ssts) VALUES\r\n ");
+		StringBuffer sb=new StringBuffer("insert  into jingjia(date,code,name,nnextkpzf,nextkpzf,kpzf,nnextzf,nextzf,zf,kpcje,kphsl,ltsz,hslpm,ssts,month,year) VALUES\r\n ");
 		for(int i=2;i<list1.size()-1;i++){
 			//			000155.SZ	川能动力	9.968186638	1.516919487	3.13253012	1.06044539	10.03500583	3.25301205	22277400	0.20492126	18834100000
 			try {
@@ -91,6 +116,8 @@ public class MainTest {
 				double hsl=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(9))));
 				double ltsz=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(10))/10000/10000));
 				String ssts=(String) list1.get(i).get(11);
+				String year=date.substring(0, 4);
+				String month=date.substring(0, 6);
 
 				sb.append("("+date +",");
 				sb.append("'"+code+"',");
@@ -105,7 +132,124 @@ public class MainTest {
 				sb.append(hsl+",");
 				sb.append(ltsz+",");
 				sb.append(i-1 +",");
-				sb.append(ssts);
+				sb.append(ssts+",");
+				sb.append(month+",");
+				sb.append(year);
+				hasData=true;
+			} catch (Exception e) {
+//				System.out.println("test:"+list1.get(i).get(11));
+				e.printStackTrace();
+				
+				continue;
+			}
+			sb.append(")\r\n,");
+		}
+		sb.setLength(sb.length()-1);
+		sb.append(";");
+		if(!hasData){
+			//排除所有的涨幅都是--
+			return "";
+		}
+		return sb.toString();
+	}
+	
+	
+	public static String getLanBanSqlFromData(List<List<List<Object>>> list,String date){
+		List<List<Object>> list1=list.get(0);
+		boolean hasData=false;
+		StringBuffer sb=new StringBuffer("insert  into lanban(date,code,name,zdzf,jzf,d3,d2,d1,ztlb,scztsj,zzztsj,fdje,month,year) VALUES\r\n ");
+		for(int i=2;i<list1.size()-1;i++){
+			try {
+				String code=(String) list1.get(i).get(0);
+				String name=(String) list1.get(i).get(1);
+				double zdzf=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(2))));
+				double jzf=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(3))));
+				jzf=Double.valueOf(df.format(jzf-100));
+				double d3=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(4))));
+				double d2=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(5))));
+				double d1=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(6))));
+				String ztlb=(String) list1.get(i).get(7);
+				String scztsj=(String) list1.get(i).get(8);
+				String zzztsj=(String) list1.get(i).get(9);
+				String fdje="0";
+				if(!((String) list1.get(i).get(10)).equals("--")){
+				fdje=df.format(Double.valueOf((String) list1.get(i).get(10))/10000);
+				}
+				String year=date.substring(0, 4);
+				String month=date.substring(0, 6);
+
+				sb.append("("+date +",");
+				sb.append("'"+code+"',");
+				sb.append("'"+name+"',");
+				sb.append(zdzf+",");
+				sb.append(jzf+",");
+				sb.append(d3+",");
+				sb.append(d2+",");
+				sb.append(d1+",");
+				sb.append("'"+ztlb+"',");
+				sb.append("'"+scztsj+"',");
+				sb.append("'"+zzztsj+"',");
+				sb.append(fdje+",");
+				sb.append(month+",");
+				sb.append(year);
+				hasData=true;
+			} catch (Exception e) {
+//				System.out.println("test:"+list1.get(i).get(11));
+				e.printStackTrace();
+				
+				continue;
+			}
+			sb.append(")\r\n,");
+		}
+		sb.setLength(sb.length()-1);
+		sb.append(";");
+		if(!hasData){
+			//排除所有的涨幅都是--
+			return "";
+		}
+		return sb.toString();
+	}
+	
+	public static String getShouBanSqlFromData(List<List<List<Object>>> list,String date){
+		List<List<Object>> list1=list.get(0);
+		boolean hasData=false;
+		StringBuffer sb=new StringBuffer("insert  into shouban(date,code,name,d2zf,d1zf,lb,dzf,hsl,ltsz,ztlb,scztsj,ssts,month,year) VALUES\r\n ");
+		for(int i=2;i<list1.size()-1;i++){
+			try {
+				String code=(String) list1.get(i).get(0);
+				String name=(String) list1.get(i).get(1);
+				if("--".equals((String) list1.get(i).get(4))||"--".equals((String) list1.get(i).get(2))||"--".equals((String) list1.get(i).get(3))){
+					continue;
+				}
+				double d2zf=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(2))));
+				double d1zf=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(3))));
+				double lb=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(4))));
+				double dzf=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(5))*100));
+				dzf=dzf-100;
+				dzf=Double.valueOf(df.format(dzf));
+				double hsl=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(6))));
+				double ltsz=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(7))/10000/10000));
+				String ztlb=(String) list1.get(i).get(8);
+				String scztsj=(String) list1.get(i).get(9);
+				scztsj=scztsj.trim();
+				double ssts=Double.valueOf(df.format(Double.valueOf((String) list1.get(i).get(10))));
+				String year=date.substring(0, 4);
+				String month=date.substring(0, 6);
+
+				sb.append("("+date +",");
+				sb.append("'"+code+"',");
+				sb.append("'"+name+"',");
+				sb.append(d2zf+",");
+				sb.append(d1zf+",");
+				sb.append(lb+",");
+				sb.append(dzf+",");
+				sb.append(hsl+",");
+				sb.append(ltsz+",");
+				sb.append("'"+ztlb+"',");
+				sb.append("'"+scztsj+"',");
+				sb.append((int)(ssts)+",");
+				sb.append(month+",");
+				sb.append(year);
 				hasData=true;
 			} catch (Exception e) {
 //				System.out.println("test:"+list1.get(i).get(11));
@@ -169,8 +313,13 @@ public class MainTest {
 
 	public static void printWenCaiByDate(String path) throws IOException{
 //		String selectSql="date1涨幅;date1开盘涨幅;date1非一字板;date1开盘成交额大于1千万前20;剔除st股;date1总市值<500亿;date1上市天数;date1开盘换手率前20;非创业板;非科创板;非st;date2开盘涨幅;date2涨幅;";
-//		String selectSql="date1涨幅；date1开盘涨幅>2且非涨停；date1开盘成交额大于1千万前20；date2开盘涨幅；date2涨幅；剔除st股；date1总市值<500亿;date1开盘换手率前10；非创业板；非科创板；非st；";
-		String selectSql="date1涨停非连板;剔除st;date1涨停原因;date1涨幅;date2涨幅;date3涨幅;date3最高涨幅;(date3均价/date2收盘价)*100;date2开盘涨幅; date2首次涨停时间不等于最终涨停时间;date2开盘非涨停";
+		//竞价选股sql
+//		String selectSql="date1涨幅;date1开盘涨幅;date1非一字板;date1开盘成交额大于1千万前20;剔除st股;date1总市值<500亿;date1上市天数;date1开盘换手率前20;非创业板;非科创板;非st;date2开盘涨幅;date2涨幅;date3开盘涨幅;date3涨幅";
+		//兰板选股sql
+		String selectSql="date1涨停非连板;剔除st;date1涨停原因;date1涨幅;date2涨幅;date3涨幅;date3最高涨幅;(date3均价/date2收盘价)*100;date2开盘涨幅; date2首次涨停时间不等于最终涨停时间;date2开盘非涨停;date2成交量/date1成交量；date1收盘价/date2往前20天最低价";
+		//首板选股sql
+//		String selectSql="date1非涨停;date2涨停及时间;date2开盘非涨停;date2成交量/date1成交量;date1收盘价，date1收盘价/date2往前20日最低价;date2换手率;date2涨幅;date3涨跌幅排序;流通市值;非st;非新股;date2涨停原因";
+		
 		String dates=ReadFile.readFile01(path);
 		String arrs[]=dates.split("\r\n");
 
